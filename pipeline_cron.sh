@@ -1,6 +1,8 @@
 #!/bin/sh
 set -euo pipefail
 
+module load anaconda
+
 # Description: shell script to launch bioinformatics analysis pipelines.
 # This script should be executed as sbsuser 
 # Date: 18/08/20
@@ -52,7 +54,26 @@ function processJobs {
 
 
                     if [ "$instrumentType" == "miseq" ]; then
+                        
+                        # For now we only want to change the sample sheets back on Nemo - remove this loop and just keep commands when Dory is updated
+                        if [[ $run =~ [0-9]{6}[_][M][0][0][7][6][6][_] ]]; then
+                            echo "Run on Nemo - fix samplesheet."
 
+                            # Copy the Illumina Samplesheet
+                            mv $raw_write/$instrumentType/$run/SampleSheet.csv $raw_write/$instrumentType/$run/SampleSheet_orig.csv
+
+                            # Convert from Windows file back to csv
+                            conda activate dos2unix
+                            dos2unix --newfile $raw_write/$instrumentType/$run/SampleSheet_orig.csv $raw_write/$instrumentType/$run/SampleSheet.csv
+                            conda deactivate
+
+                            # Add commas to blank lines
+                            sed -i "s/^[[:blank:]]*$/,,,,,,,,/" $raw_write/$instrumentType/$run/SampleSheet.csv
+
+                        else
+                            echo "Run on Dory - do not change samplesheet."
+
+                        fi
 
                         cat $raw_write/$instrumentType/$run/SampleSheet.csv | sed 's/Name$ge/pipelineName=germline_enrichment_nextflow;pipelineVersion=master/' | sed 's/Name$SA/pipelineName=SomaticAmplicon;pipelineVersion=master/' | sed 's/NGHS101X/NGHS-101X/' | sed 's/NGHS102X/NGHS-102X/' | sed 's/ref\$/referral=/' | sed 's/%/;/g' | sed 's/\$/=/g' > $raw_write/$instrumentType/$run/SampleSheet_fixed.csv
 
