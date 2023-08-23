@@ -1,8 +1,6 @@
 #!/bin/sh
 set -euo pipefail
 
-module load anaconda
-
 # Description: shell script to launch bioinformatics analysis pipelines.
 # This script should be executed as sbsuser 
 # Date: 18/08/20
@@ -63,9 +61,7 @@ function processJobs {
                             mv $raw_write/$instrumentType/$run/SampleSheet.csv $raw_write/$instrumentType/$run/SampleSheet_orig.csv
 
                             # Convert from Windows file back to csv
-                            conda activate dos2unix
-                            dos2unix --newfile $raw_write/$instrumentType/$run/SampleSheet_orig.csv $raw_write/$instrumentType/$run/SampleSheet.csv
-                            conda deactivate
+                            sed "s/\r//g"$raw_write/$instrumentType/$run/SampleSheet_orig.csv > $raw_write/$instrumentType/$run/SampleSheet.csv
 
                             # Add commas to blank lines
                             sed -i "s/^[[:blank:]]*$/,,,,,,,,/" $raw_write/$instrumentType/$run/SampleSheet.csv
