@@ -61,7 +61,7 @@ function processJobs {
                             mv $raw_write/$instrumentType/$run/SampleSheet.csv $raw_write/$instrumentType/$run/SampleSheet_orig.csv
 
                             # Convert from Windows file back to csv
-                            sed "s/\r//g"$raw_write/$instrumentType/$run/SampleSheet_orig.csv > $raw_write/$instrumentType/$run/SampleSheet.csv
+                            sed "s/\r//g" $raw_write/$instrumentType/$run/SampleSheet_orig.csv > $raw_write/$instrumentType/$run/SampleSheet.csv
 
                             # Add commas to blank lines
                             sed -i "s/^[[:blank:]]*$/,,,,,,,,/" $raw_write/$instrumentType/$run/SampleSheet.csv
