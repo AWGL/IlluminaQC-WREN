@@ -98,7 +98,7 @@ function processJobs {
                      elif [ $is_tso500 -gt 0 ]; then
 
                          echo "Keyword TSO500 found in SampleSheet so executing TSO500 solid pipeline"
-                         ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/TSO500 && cd /Output/results/$run/TSO500 && cp /data/diagnostics/pipelines/TSO500/TSO500_post_processing-master/*_TSO500.sh . && sbatch --export=raw_data=$path 1_TSO500.sh"
+                         ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/TSO500 && cd /Output/results/$run/TSO500 && cp /data/diagnostics/pipelines/TSO500/TSO500_post_processing-main/*_TSO500.sh . && sbatch --export=raw_data=$path 1_TSO500.sh"
 
                      elif [ $is_ctdna -gt 0 ]; then
 
