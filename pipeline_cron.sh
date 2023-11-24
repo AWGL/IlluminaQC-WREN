@@ -31,13 +31,14 @@ function processJobs {
         run=$(basename "$path")
 
         # log
-	echo "path: $path"
+	    echo "path: $path"
         echo "run: $run"
         echo "instrumentType: $instrumentType"
         
         if [ -f "$path"/do_not_process ]; then
 
             echo "Not processing run $run"
+
         else
 
             # only run if novaseq and CopyComplete.txt is here - if other sequencer then do not care
@@ -50,7 +51,6 @@ function processJobs {
                     # remove spaces from sample sheet
                     sed -i 's/ //g' $raw_write/$instrumentType/$run/SampleSheet.csv
 
-
                     if [ "$instrumentType" == "miseq" ]; then
 
                         # Copy the Illumina Samplesheet
@@ -62,6 +62,7 @@ function processJobs {
                         # Add commas to blank lines
                         sed -i "s/^[[:blank:]]*$/,,,,,,,,/" $raw_write/$instrumentType/$run/SampleSheet.csv
 
+                        # Change short format pipeline names to long pipeline names
                         cat $raw_write/$instrumentType/$run/SampleSheet.csv | sed 's/Name$ge/pipelineName=germline_enrichment_nextflow;pipelineVersion=master/' | sed 's/Name$SA/pipelineName=SomaticAmplicon;pipelineVersion=master/' | sed 's/NGHS101X/NGHS-101X/' | sed 's/NGHS102X/NGHS-102X/' | sed 's/ref\$/referral=/' | sed 's/%/;/g' | sed 's/\$/=/g' > $raw_write/$instrumentType/$run/SampleSheet_fixed.csv
 
                         mv $raw_write/$instrumentType/$run/SampleSheet_fixed.csv $raw_write/$instrumentType/$run/SampleSheet.csv
@@ -82,66 +83,64 @@ function processJobs {
                     is_ctdna=$(cat "$path"/SampleSheet.csv | grep "tso500_ctdna" | wc -l)
                     set -e
                      
-                     if [ $is_dragenswgs -gt 0]; then
+                    if [ $is_dragenswgs -gt 0]; then
 
                         echo "Keyword DragenSWGS found in SampleSheet so doing nothing"
                     
-                     elif [ $is_dragen -gt 0 ]; then
+                    elif [ $is_dragen -gt 0 ]; then
 
-                         echo "Keyword Dragen found in SampleSheet so executing DragenQC"
-                         ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-master/DragenQC.sh"
+                        echo "Keyword Dragen found in SampleSheet so executing DragenQC"
+                        ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-master/DragenQC.sh"
 
-                     elif [ $is_tso500 -gt 0 ]; then
+                    elif [ $is_tso500 -gt 0 ]; then
 
-                         echo "Keyword TSO500 found in SampleSheet so executing TSO500 solid pipeline"
-                         ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/TSO500 && cd /Output/results/$run/TSO500 && cp /data/diagnostics/pipelines/TSO500/TSO500_post_processing-main/*_TSO500.sh . && sbatch --export=raw_data=$path 1_TSO500.sh"
+                        echo "Keyword TSO500 found in SampleSheet so executing TSO500 solid pipeline"
+                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/TSO500 && cd /Output/results/$run/TSO500 && cp /data/diagnostics/pipelines/TSO500/TSO500_post_processing-main/*_TSO500.sh . && sbatch --export=raw_data=$path 1_TSO500.sh"
 
-                     elif [ $is_ctdna -gt 0 ]; then
+                    elif [ $is_ctdna -gt 0 ]; then
 
-                         echo "Keyword tso500_ctdna found in SampleSheet so executing TSO500 ctDNA pipeline"
-                         ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-master/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
+                        echo "Keyword tso500_ctdna found in SampleSheet so executing TSO500 ctDNA pipeline"
+                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-master/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
 
-                     else
-                         # launch IlluminaQC for demultiplexing and QC
-                         ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch -J IlluminaQC-"$run" --export=sourceDir=$path /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-$version/1_IlluminaQC.sh"
+                    else
+                        # launch IlluminaQC for demultiplexing and QC
+                        ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch -J IlluminaQC-"$run" --export=sourceDir=$path /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-$version/1_IlluminaQC.sh"
 
-                     fi
+                    fi
 
-                     # check we havent already copied the directory
-                     if [ -d "/data_heath/archive/quality_temp/$instrumentType/$run" ]; then
+                    # check we havent already copied the directory
+                    if [ -d "/data_heath/archive/quality_temp/$instrumentType/$run" ]; then
 
-                         echo "/data_heath/archive/quality_temp/$instrumentType/$run already exists"
-                     else
+                        echo "/data_heath/archive/quality_temp/$instrumentType/$run already exists"
 
-                         # move run to archive temp quality archive
+                    else
 
-			 mkdir "/data_heath/archive/quality_temp/$instrumentType/$run"
+                        # move run to archive temp quality archive
+                        mkdir "/data_heath/archive/quality_temp/$instrumentType/$run"
+                        mkdir "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"	 
+			            cp "$path"/InterOp/*.bin "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
+			            cp "$path"/SampleSheet.csv "/data_heath/archive/quality_temp/$instrumentType/$run/"
+			            cp "$path"/*.xml "/data_heath/archive/quality_temp/$instrumentType/$run/"
+                        # we don't want dragenswgs runs to process
+                        if [ ! $is_dragenswgs ]; then
+			                touch "/data_heath/archive/quality_temp/$instrumentType/$run"/run_copy_complete.txt
+                        fi
+           		        touch $raw_write/$instrumentType/$run/ready_for_move.txt 
+                    fi
 
-                         mkdir "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
-			 
-			 cp "$path"/InterOp/*.bin "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
-			 cp "$path"/SampleSheet.csv "/data_heath/archive/quality_temp/$instrumentType/$run/"
-			 cp "$path"/*.xml "/data_heath/archive/quality_temp/$instrumentType/$run/"
-             if [ ! $is_dragenswgs ]; then
-			    touch "/data_heath/archive/quality_temp/$instrumentType/$run"/run_copy_complete.txt
-             fi
-           		 touch $raw_write/$instrumentType/$run/ready_for_move.txt 
-                     fi
+                else
 
-                 else
+                    echo "Not running as no sample sheet"
 
-                     echo "Not running as no sample sheet"
+                fi
 
-                 fi
+            else
 
-          else
-
-              echo "Not running Novaseq unless CopyComplete.txt is there"
+                echo "Not running Novaseq unless CopyComplete.txt is there"
     
-          fi
-        fi
+            fi
 
-	
+        fi
 
     done
 }
