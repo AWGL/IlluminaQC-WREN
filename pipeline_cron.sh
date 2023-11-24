@@ -76,12 +76,17 @@ function processJobs {
 
                     # counting instances of Dragen in SampleSheet
                     set +e
+                    is_dragenswgs=$(cat "$path"/SampleSheet.csv | grep "DragenSWGS" | wc -l)
                     is_dragen=$(cat "$path"/SampleSheet.csv | grep "Dragen" | wc -l)
                     is_tso500=$(cat "$path"/SampleSheet.csv | grep "TSO500" | wc -l)
                     is_ctdna=$(cat "$path"/SampleSheet.csv | grep "tso500_ctdna" | wc -l)
                     set -e
+                     
+                     if [ $is_dragenswgs -gt 0]; then
 
-                    if [ $is_dragen -gt 0 ]; then
+                        echo "Keyword DragenSWGS found in SampleSheet so doing nothing"
+                    
+                     elif [ $is_dragen -gt 0 ]; then
 
                          echo "Keyword Dragen found in SampleSheet so executing DragenQC"
                          ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-master/DragenQC.sh"
@@ -117,7 +122,9 @@ function processJobs {
 			 cp "$path"/InterOp/*.bin "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
 			 cp "$path"/SampleSheet.csv "/data_heath/archive/quality_temp/$instrumentType/$run/"
 			 cp "$path"/*.xml "/data_heath/archive/quality_temp/$instrumentType/$run/"
-			 touch "/data_heath/archive/quality_temp/$instrumentType/$run"/run_copy_complete.txt
+             if [ ! $is_dragenswgs ]; then
+			    touch "/data_heath/archive/quality_temp/$instrumentType/$run"/run_copy_complete.txt
+             fi
            		 touch $raw_write/$instrumentType/$run/ready_for_move.txt 
                      fi
 
