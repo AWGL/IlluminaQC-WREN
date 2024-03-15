@@ -53,12 +53,21 @@ echo -e "$(basename $sourceDir)\t$yieldGb\t$q30Pct\t$avgDensity\t$avgPf\t$totalR
 # BCL2FASTQ
 bcl2fastq -l WARNING -R "$sourceDir" -o .
 
-#copy files to keep to long-term storage
+# Copy files to keep to long-term storage
 mkdir Data
 cp "$sourceDir"/SampleSheet.csv .
 cp "$sourceDir"/?unParameters.xml RunParameters.xml
 cp "$sourceDir"/RunInfo.xml .
 cp -R "$sourceDir"/InterOp .
+
+# Sometimes the SampleSheet isn't being fixed the first time round - fix again
+mv SampleSheet.csv SampleSheet_orig.csv
+# Convert from Windows file back to csv
+sed "s/\r//g" SampleSheet_orig.csv > SampleSheet.csv
+# Add commas to blank lines
+sed -i "s/^[[:blank:]]*$/,,,,,,,,/" SampleSheet.csv
+cat SampleSheet.csv | sed 's/Name$ge/pipelineName=germline_enrichment_nextflow;pipelineVersion=master/' | sed 's/Name$SA/pipelineName=SomaticAmplicon;pipelineVersion=master/' | sed 's/NGHS101X/NGHS-101X/' | sed 's/NGHS102X/NGHS-102X/' | sed 's/ref\$/referral=/' | sed 's/%/;/g' | sed 's/\$/=/g' > SampleSheet_fixed.csv
+mv SampleSheet_fixed.csv SampleSheet.csv
 
 # Make variable files
 java -jar /data/diagnostics/apps/MakeVariableFiles/MakeVariableFiles-2.1.0.jar \
@@ -106,3 +115,7 @@ for variableFile in $(ls *.variables); do
                 bash -c "cd $res_dir && sbatch -J "$panel"-"$sampleId" 1_*.sh"
 	fi
 done
+
+# Copy the fixed SampleSheet to quality temp
+cd $SLURM_SUBMIT_DIR
+cp SampleSheet.csv /data/archive/quality_temp/miseq/${seqId}/
