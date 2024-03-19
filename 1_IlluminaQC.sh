@@ -118,4 +118,4 @@ done
 
 # Copy the fixed SampleSheet to quality temp
 cd $SLURM_SUBMIT_DIR
-cp SampleSheet.csv /data/archive/quality_temp/miseq/${seqId}/
+cp SampleSheet.csv /data_heath/archive/quality_temp/miseq/${seqId}/
