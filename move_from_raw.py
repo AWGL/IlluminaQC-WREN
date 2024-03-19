@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 # define the age threshold for directory movement
-threshold_days = 10  # configurable
+threshold_days = 8  # configurable
 
 # define base raw and archive directories
 raw_dir = '/data_heath/raw'

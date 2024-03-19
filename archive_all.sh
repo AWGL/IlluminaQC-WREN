@@ -9,22 +9,21 @@ dir="/data_heath/archive/miseq/"
 count=0
 
 # Maximum number of directories to process
-max=20
+max=40
 
 cd $dir
 
 # Go through each sub-directory
 for d in ./*/ ; do
-
-
     echo $d
+
     # Break if maximum count reached
     if [ $count -eq $max ]; then
         break
     fi
 
-    # Check if it's a directory
-    if [ -d "$d" ]; then
+    # Check if it's a directory and if the tar file does not exist
+    if [ -d "$d" ] && [ ! -f "${d%/}.tar" ]; then
         # Archive the directory
         tar -cf "${d%/}.tar" "$d"
 
@@ -48,4 +47,6 @@ for d in ./*/ ; do
         sleep 500
     fi
 done
+
+
 
