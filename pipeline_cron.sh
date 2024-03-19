@@ -31,7 +31,7 @@ function processJobs {
         run=$(basename "$path")
 
         # log
-	echo "path: $path"
+	    echo "path: $path"
         echo "run: $run"
         echo "instrumentType: $instrumentType"
         
@@ -83,58 +83,60 @@ function processJobs {
 
                     if [ $is_dragen -gt 0 ]; then
 
-                         echo "Keyword Dragen found in SampleSheet so executing DragenQC"
-                         ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-master/DragenQC.sh"
+                        echo "Keyword Dragen found in SampleSheet so executing DragenQC"
+                        ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-master/DragenQC.sh"
 
-                     elif [ $is_tso500 -gt 0 ]; then
+                    elif [ $is_tso500 -gt 0 ]; then
 
-                         echo "Keyword TSO500 found in SampleSheet so executing TSO500 solid pipeline"
-                         ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/TSO500 && cd /Output/results/$run/TSO500 && cp /data/diagnostics/pipelines/TSO500/TSO500_post_processing-main/*_TSO500.sh . && sbatch --export=raw_data=$path 1_TSO500.sh"
+                        echo "Keyword TSO500 found in SampleSheet so executing TSO500 solid pipeline"
+                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/TSO500 && cd /Output/results/$run/TSO500 && cp /data/diagnostics/pipelines/TSO500/TSO500_post_processing-main/*_TSO500.sh . && sbatch --export=raw_data=$path 1_TSO500.sh"
 
-                     elif [ $is_ctdna -gt 0 ]; then
+                    elif [ $is_ctdna -gt 0 ]; then
 
-                         echo "Keyword tso500_ctdna found in SampleSheet so executing TSO500 ctDNA pipeline"
-                         ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-master/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
+                        echo "Keyword tso500_ctdna found in SampleSheet so executing TSO500 ctDNA pipeline"
+                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-master/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
 
-                     else
-                         # launch IlluminaQC for demultiplexing and QC
-                         ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch -J IlluminaQC-"$run" --export=sourceDir=$path /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-$version/1_IlluminaQC.sh"
+                    else
+                        # launch IlluminaQC for demultiplexing and QC
+                        ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch -J IlluminaQC-"$run" --export=sourceDir=$path /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-$version/1_IlluminaQC.sh"
 
-                     fi
+                    fi
 
-                     # check we havent already copied the directory
-                     if [ -d "/data_heath/archive/quality_temp/$instrumentType/$run" ]; then
+                    # check we havent already copied the directory
+                    if [ -d "/data_heath/archive/quality_temp/$instrumentType/$run" ]; then
 
-                         echo "/data_heath/archive/quality_temp/$instrumentType/$run already exists"
-                     else
+                        echo "/data_heath/archive/quality_temp/$instrumentType/$run already exists"
+                     
+                    else
 
-                         # move run to archive temp quality archive
+                        # move run to archive temp quality archive
+                        mkdir "/data_heath/archive/quality_temp/$instrumentType/$run"
+                        # for miseq runs, make the directory writeable by transfer so the updated SampleSheet can be copied accross from IlluminaQC
+                        if [ ${instrumentType} = "miseq" ]; then
+                            chmod a+w "/data_heath/archive/quality_temp/$instrumentType/$run"
+                        fi
 
-			 mkdir "/data_heath/archive/quality_temp/$instrumentType/$run"
+                        mkdir "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
+                        
+                        cp "$path"/InterOp/*.bin "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
+                        cp "$path"/SampleSheet.csv "/data_heath/archive/quality_temp/$instrumentType/$run/"
+                        cp "$path"/*.xml "/data_heath/archive/quality_temp/$instrumentType/$run/"
+                        touch "/data_heath/archive/quality_temp/$instrumentType/$run"/run_copy_complete.txt
+                        touch $raw_write/$instrumentType/$run/ready_for_move.txt 
+                    fi
 
-                         mkdir "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
-			 
-			 cp "$path"/InterOp/*.bin "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
-			 cp "$path"/SampleSheet.csv "/data_heath/archive/quality_temp/$instrumentType/$run/"
-			 cp "$path"/*.xml "/data_heath/archive/quality_temp/$instrumentType/$run/"
-			 touch "/data_heath/archive/quality_temp/$instrumentType/$run"/run_copy_complete.txt
-           		 touch $raw_write/$instrumentType/$run/ready_for_move.txt 
-                     fi
+                else
 
-                 else
+                    echo "Not running as no sample sheet"
 
-                     echo "Not running as no sample sheet"
+            fi
 
-                 fi
+            else
 
-          else
-
-              echo "Not running Novaseq unless CopyComplete.txt is there"
+                echo "Not running Novaseq unless CopyComplete.txt is there"
     
-          fi
+            fi
         fi
-
-	
 
     done
 }
