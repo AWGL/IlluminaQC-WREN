@@ -1,13 +1,22 @@
 #!/bin/bash
 
-set -euo pipefail
 
 # Cron job to find dragen results and start a nextflow pipeline for the samples.
 
-results_dir=/Output/results/
+#results_dir=/Output/results/
 
 # loop through each folder and find runs which have finished the dragen side of stuff
 
+
+
+# may be required to get module load to work - try
+source ~/.bashrc
+source /etc/profile.d/modules.sh
+module load singularity
+
+set -euo pipefail
+
+results_dir=/Output/results/
 
 for path in $(find $results_dir -maxdepth 3 -mindepth 3 -type f -name "nextflow_pipeline_required.txt" -exec dirname '{}' \;); do
 
@@ -55,7 +64,6 @@ for path in $(find $results_dir -maxdepth 3 -mindepth 3 -type f -name "nextflow_
 
     
      mkdir logs 
-
 
      # run nextflow
      nextflow -C \

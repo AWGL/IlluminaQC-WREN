@@ -15,7 +15,7 @@ archive_qc = '/data_heath/archive/quality_temp'
 # get today's date
 today = datetime.now()
 
-max_moves = 12
+max_moves = 20
 move_count = 0
 
 # iterate over raw_dir's subdirectories
