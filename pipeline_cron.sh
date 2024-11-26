@@ -50,24 +50,6 @@ function processJobs {
                     # remove spaces from sample sheet
                     sed -i 's/ //g' $raw_write/$instrumentType/$run/SampleSheet.csv
 
-
-                    if [ "$instrumentType" == "miseq" ]; then
-
-                        # Copy the Illumina Samplesheet
-                        mv $raw_write/$instrumentType/$run/SampleSheet.csv $raw_write/$instrumentType/$run/SampleSheet_orig.csv
-
-                        # Convert from Windows file back to csv
-                        sed "s/\r//g" $raw_write/$instrumentType/$run/SampleSheet_orig.csv > $raw_write/$instrumentType/$run/SampleSheet.csv
-
-                        # Add commas to blank lines
-                        sed -i "s/^[[:blank:]]*$/,,,,,,,,/" $raw_write/$instrumentType/$run/SampleSheet.csv
-
-                        cat $raw_write/$instrumentType/$run/SampleSheet.csv | sed 's/Name$ge/pipelineName=germline_enrichment_nextflow;pipelineVersion=master/' | sed 's/Name$SA/pipelineName=SomaticAmplicon;pipelineVersion=master/' | sed 's/NGHS101X/NGHS-101X/' | sed 's/NGHS102X/NGHS-102X/' | sed 's/ref\$/referral=/' | sed 's/%/;/g' | sed 's/\$/=/g' > $raw_write/$instrumentType/$run/SampleSheet_fixed.csv
-
-                        mv $raw_write/$instrumentType/$run/SampleSheet_fixed.csv $raw_write/$instrumentType/$run/SampleSheet.csv
-
-                    fi
-
                     # modify RTAComplete to prevent cron re-triggering
                     mv $raw_write/$instrumentType/$run/RTAComplete.txt $raw_write/$instrumentType/$run/_RTAComplete.txt
 
@@ -111,13 +93,7 @@ function processJobs {
 
                         # move run to archive temp quality archive
                         mkdir "/data_heath/archive/quality_temp/$instrumentType/$run"
-                        # for miseq runs, make the directory writeable by transfer so the updated SampleSheet can be copied accross from IlluminaQC
-                        if [ ${instrumentType} = "miseq" ]; then
-                            chmod a+w "/data_heath/archive/quality_temp/$instrumentType/$run"
-                        fi
-
                         mkdir "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
-                        
                         cp "$path"/InterOp/*.bin "/data_heath/archive/quality_temp/$instrumentType/$run/InterOp/"
                         cp "$path"/SampleSheet.csv "/data_heath/archive/quality_temp/$instrumentType/$run/"
                         cp "$path"/*.xml "/data_heath/archive/quality_temp/$instrumentType/$run/"
@@ -144,4 +120,4 @@ function processJobs {
 #processJobs "$raw_read/hiseq"
 processJobs "$raw_read/nextseq"
 processJobs "$raw_read/novaseq"
-processJobs "$raw_read/miseq"
+#processJobs "$raw_read/miseq"
