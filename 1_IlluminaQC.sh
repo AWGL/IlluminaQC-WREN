@@ -80,26 +80,35 @@ for variableFile in $(ls *.variables); do
 
 	# If the samples fastq files exist, and has reads move them to the sample folder
 	fastq_files=( "$sampleId"_S*.fastq.gz )
-	all_exist_and_nonempty=true
+	exist_and_nonempty=true
 
-	if [ -e "${fastq_files[0]}" ]; then
-		all_exist_and_nonempty=false
+	# Check if at least one of the fastq files exist
+	if [ ! -e "${fastq_files[0]}" ]; then
+		exist_and_nonempty=false
 	else
+		# Check all fastq files are not empty
 		for i in "${fastq_files[@]}"; do
 			if [ ! -s "$i" ]; then
-				all_exist_and_nonempty=false
+				exist_and_nonempty=false
 				break
 			fi
 		done
 	fi
 	
-	if $all_exist_and_nonempty; then
+	if $exist_and_nonempty; then
 		mv "${fastq_files[@]}" Data/"$sampleId"
 
 	# If Data doesn't contain NTC fastq files or empty, copy them from the pipeline dir
 	else
-		cp /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/Data/"$sampleId"/"$sampleId"_S*_R1_001.fastq.gz Data/"$sampleId"
-		cp /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/Data/"$sampleId"/"$sampleId"_S*_R2_001.fastq.gz Data/"$sampleId"
+		# Check if the sampleId is an NTC
+		if [[ "$sampleId" == *NTC* ]]; then
+			cp /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/Data/"$sampleId"/"$sampleId"_S*_R1_001.fastq.gz Data/"$sampleId"
+			cp /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/Data/"$sampleId"/"$sampleId"_S*_R2_001.fastq.gz Data/"$sampleId"
+		else
+			# If the sampleId is not an NTC, it's a regular sample missing fastq files, exit and print error
+			echo "FASTQ files for $sampleId are missing or empty and sample is not NTC. Exiting."
+        	exit 1
+		fi
 	fi
 	
 	# create analysis folders
