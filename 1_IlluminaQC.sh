@@ -101,20 +101,20 @@ for variableFile in $(ls *.variables); do
 	# If Data doesn't contain NTC fastq files or empty, copy them from the pipeline dir
 	# Check sample is an NTC
 	elif [[ "$sampleId" == *NTC* ]]; then
-		
-			# Change the name of the model NTC fastqs to match the worksheet of the current run
-			for ntc_file in /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/NTC_fastqs/*.fastq.gz; do
-            	if [ -e "$ntc_file" ]; then
-             	   # Extract the suffix (everything after NTC-00-0000)
-                	suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
 
-                	# Create new filename with the current sampleId
-                	new_filename="${sampleId}${suffix}"
+		# Change the name of the model NTC fastqs to match the worksheet of the current run
+		for ntc_file in /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/NTC_fastqs/*.fastq.gz; do
+           	if [ -e "$ntc_file" ]; then
+           	   # Extract the suffix (everything after NTC-00-0000)
+               	suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
 
-                	# Copy template file with new name (original remains unchanged)
-                	cp "$ntc_file" Data/"$sampleId"/"$new_filename"
-            	fi
-        	done
+               	# Create new filename with the current sampleId
+               	new_filename="${sampleId}${suffix}"
+
+               	# Copy template file with new name (original remains unchanged)
+               	cp "$ntc_file" Data/"$sampleId"/"$new_filename"
+           	fi
+        done
 
 	else
 		# If the sampleId is not an NTC, it's a regular sample missing fastq files, exit and print error
