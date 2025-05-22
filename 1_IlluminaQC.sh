@@ -78,13 +78,26 @@ for variableFile in $(ls *.variables); do
 	mkdir Data/"$sampleId"
 	mv "$variableFile" Data/"$sampleId"
 
-	# If the samples fastq files exist, move them to the sample folder
-	if [ -e "$sampleId"_S*.fastq.gz ]; then
-		mv "$sampleId"_S*.fastq.gz Data/"$sampleId"
+	# If the samples fastq files exist, and has reads move them to the sample folder
+	fastq_files=( "$sampleId"_S*.fastq.gz )
+	all_exist_and_nonempty=true
 
-	# If Data doesn't contain NTC fastq files, copy them from the pipeline dir
+	if [ -e "${fastq_files[0]}" ]; then
+		all_exist_and_nonempty=false
 	else
-		 [ ! -e Data/"$sampleId"/"$sampleId"_S*_R1_001.fastq.gz ]; then
+		for i in "${fastq_files[@]}"; do
+			if [ ! -s "$i" ]; then
+				all_exist_and_nonempty=false
+				break
+			fi
+		done
+	fi
+	
+	if $all_exist_and_nonempty; then
+		mv "${fastq_files[@]}" Data/"$sampleId"
+
+	# If Data doesn't contain NTC fastq files or empty, copy them from the pipeline dir
+	else
 		cp /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/Data/"$sampleId"/"$sampleId"_S*_R1_001.fastq.gz Data/"$sampleId"
 		cp /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/Data/"$sampleId"/"$sampleId"_S*_R2_001.fastq.gz Data/"$sampleId"
 	fi
