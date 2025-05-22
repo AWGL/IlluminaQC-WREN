@@ -106,20 +106,20 @@ for variableFile in $(ls *.variables); do
 		for ntc_file in /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/NTC_fastqs/*.fastq.gz; do
            	if [ -e "$ntc_file" ]; then
            	   # Extract the suffix (everything after NTC-00-0000)
-               	suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
-
-               	# Create new filename with the current sampleId
-               	new_filename="${sampleId}${suffix}"
-
-               	# Copy template file with new name (original remains unchanged)
-               	cp "$ntc_file" Data/"$sampleId"/"$new_filename"
-           	fi
-        done
+			   suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
+			   
+			   # Create new filename with the current sampleId
+			   new_filename="${sampleId}${suffix}"
+			   
+			   # Copy template file with new name (original remains unchanged)
+			   cp "$ntc_file" Data/"$sampleId"/"$new_filename"
+			fi
+		done
 
 	else
 		# If the sampleId is not an NTC, it's a regular sample missing fastq files, exit and print error
 		echo "FASTQ files for $sampleId are missing or empty and sample is not NTC. Exiting."
-       	exit 1
+		exit 1
 	fi
 fi
 	
