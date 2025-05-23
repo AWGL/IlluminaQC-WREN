@@ -103,8 +103,8 @@ for variableFile in $(ls *.variables); do
 	elif [[ "$sampleId" == *NTC* ]]; then
 
 		# Change the name of the model NTC fastqs to match the worksheet of the current run
-		for ntc_file in /data/diagnostics/pipelines/"$pipelineName"/"$pipelineName"-"$pipelineVersion"/NTC_fastqs/*.fastq.gz; do
-           	if [ -e "$ntc_file" ]; then
+		for ntc_file in /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-clean_ntc_fix/NTC_fastqs/*.fastq.gz; do
+        	if [ -e "$ntc_file" ]; then
            	   # Extract the suffix (everything after NTC-00-0000)
 			   suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
 			   
@@ -121,7 +121,7 @@ for variableFile in $(ls *.variables); do
 		echo "FASTQ files for $sampleId are missing or empty and sample is not NTC. Exiting."
 		exit 1
 	fi
-fi
+
 	
 	# create analysis folders
 	if [[ ! -z ${pipelineVersion-} && ! -z ${pipelineName-} && ! -z ${panel-} && ! -z ${worklistId-} ]]
