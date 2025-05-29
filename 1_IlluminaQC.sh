@@ -77,7 +77,51 @@ for variableFile in $(ls *.variables); do
 	# make sample folder
 	mkdir Data/"$sampleId"
 	mv "$variableFile" Data/"$sampleId"
-	mv "$sampleId"_S*.fastq.gz Data/"$sampleId"
+
+	# If the samples fastq files exist, and has reads move them to the sample folder
+	fastq_files=( "$sampleId"_S*.fastq.gz )
+	exist_and_nonempty=true
+
+	# Check if at least one of the fastq files exist
+	if [ ! -e "${fastq_files[0]}" ]; then
+		exist_and_nonempty=false
+	else
+		# Check all fastq files are not empty
+		for i in "${fastq_files[@]}"; do
+			if [ ! -s "$i" ]; then
+				exist_and_nonempty=false
+				break
+			fi
+		done
+	fi
+	
+	if $exist_and_nonempty; then
+		mv "${fastq_files[@]}" Data/"$sampleId"
+
+	# If Data doesn't contain NTC fastq files or empty, copy them from the pipeline dir
+	# Check sample is an NTC
+	elif [[ "$sampleId" == *NTC* ]]; then
+
+		# Change the name of the model NTC fastqs to match the worksheet of the current run
+		for ntc_file in /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-clean_ntc_fix/NTC_fastqs/*.fastq.gz; do
+        	if [ -e "$ntc_file" ]; then
+           	   # Extract the suffix (everything after NTC-00-0000)
+			   suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
+			   
+			   # Create new filename with the current sampleId
+			   new_filename="${sampleId}${suffix}"
+			   
+			   # Copy template file with new name (original remains unchanged)
+			   cp "$ntc_file" Data/"$sampleId"/"$new_filename"
+			fi
+		done
+
+	else
+		# If the sampleId is not an NTC, it's a regular sample missing fastq files, exit and print error
+		echo "FASTQ files for $sampleId are missing or empty and sample is not NTC. Exiting."
+		exit 1
+	fi
+
 	
 	# create analysis folders
 	if [[ ! -z ${pipelineVersion-} && ! -z ${pipelineName-} && ! -z ${panel-} && ! -z ${worklistId-} ]]
