@@ -103,7 +103,7 @@ for variableFile in $(ls *.variables); do
 	elif [[ "$sampleId" == *NTC* ]]; then
 
 		# Change the name of the model NTC fastqs to match the worksheet of the current run
-		for ntc_file in /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-clean_ntc_fix/NTC_fastqs/*.fastq.gz; do
+		for ntc_file in /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-1.2.0/NTC_fastqs/*.fastq.gz; do
         	if [ -e "$ntc_file" ]; then
            	   # Extract the suffix (everything after NTC-00-0000)
 			   suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
