@@ -54,7 +54,7 @@ function processJobs {
                     mv $raw_write/$instrumentType/$run/RTAComplete.txt $raw_write/$instrumentType/$run/_RTAComplete.txt
 
                     #allow time for changes to copy from data_heath to data
-                    sleep 5m
+                    sleep 20m
 
                     # counting instances of Dragen in SampleSheet
                     set +e
@@ -76,7 +76,7 @@ function processJobs {
                     elif [ $is_ctdna -gt 0 ]; then
 
                         echo "Keyword tso500_ctdna found in SampleSheet so executing TSO500 ctDNA pipeline"
-                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-master/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
+                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-main/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
 
                     else
                         # launch IlluminaQC for demultiplexing and QC
