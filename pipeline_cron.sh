@@ -54,7 +54,7 @@ function processJobs {
                     mv $raw_write/$instrumentType/$run/RTAComplete.txt $raw_write/$instrumentType/$run/_RTAComplete.txt
 
                     #allow time for changes to copy from data_heath to data
-                    sleep 5m
+                    sleep 20m
 
                     # counting instances of Dragen in SampleSheet
                     set +e
