@@ -76,7 +76,7 @@ function processJobs {
                     elif [ $is_ctdna -gt 0 ]; then
 
                         echo "Keyword tso500_ctdna found in SampleSheet so executing TSO500 ctDNA pipeline"
-                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-master/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
+                        ssh ch1 "mkdir /Output/results/$run && mkdir /Output/results/$run/tso500_ctdna && cd /Output/results/$run/tso500_ctdna && cp /data/diagnostics/pipelines/tso500_ctdna/tso500_ctdna-main/dragen_ctdna_bcl.sh . && sbatch --export=raw_data=$path dragen_ctdna_bcl.sh"
 
                     else
                         # launch IlluminaQC for demultiplexing and QC
