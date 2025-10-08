@@ -9,6 +9,16 @@ Launch from `/data/output/fastq/<seqId>` directory:
 sbatch --export=sourceDir=<path-to-seq-dir> <path-to-IlluminaQC-directory>/1_IlluminaQC.sh
 ```
 
+### Deploy Instructions
+
+Upon deploy, ensure that all .sh and .py scripts are readable and executable by all users as follows:
+```
+chmod a+x *.sh
+chmod a+r *.sh
+chmod a+x *.py
+chmod a+r *.py
+```
+
 ### Validation Runs
 
 Validation runs will be saved under `/data/output/validations/` if lanched:
