@@ -11,7 +11,7 @@ sbatch --export=sourceDir=<path-to-seq-dir> <path-to-IlluminaQC-directory>/1_Ill
 
 ### Deploy Instructions
 
-Upon deploy, ensure that all .sh and .py scripts are readable executable by all users as follows:
+Upon deploy, ensure that all .sh and .py scripts are readable and executable by all users as follows:
 ```
 chmod a+x *.sh
 chmod a+r *.sh
