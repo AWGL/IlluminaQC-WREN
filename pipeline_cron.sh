@@ -4,7 +4,7 @@ set -euo pipefail
 # Description: shell script to launch bioinformatics analysis pipelines.
 # This script should be executed as sbsuser 
 # Date: 18/08/20
-version="1.2.0"
+version="main"
 
 # use to write raw data
 raw_write="/data_heath/raw"
