@@ -66,7 +66,7 @@ function processJobs {
                     if [ $is_dragen -gt 0 ]; then
 
                         echo "Keyword Dragen found in SampleSheet so executing DragenQC"
-                        ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-master/DragenQC.sh"
+                        ssh ch1 "mkdir $fastq_write/$run && cd $fastq_write/$run && sbatch --export=sourceDir=$path /data/diagnostics/pipelines/DragenQC/DragenQC-main/DragenQC.sh"
 
                     elif [ $is_tso500 -gt 0 ]; then
 
