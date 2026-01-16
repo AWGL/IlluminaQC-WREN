@@ -65,6 +65,18 @@ java -jar /data/diagnostics/apps/MakeVariableFiles/MakeVariableFiles-2.1.0.jar \
   SampleSheet.csv \
   RunParameters.xml
 
+# Get IlluminaQC dir for determining where FH NTC fastqs live
+if [ -n "${SLURM_JOB_ID}" ];  then
+    # check the original location through scontrol and $SLURM_JOB_ID
+    ILLUMINAQC_SCRIPT=$(scontrol show job $SLURM_JOB_ID | awk -F= '/Command=/{print $2}')
+else
+    # otherwise: started with bash. Get the real location.
+    ILLUMINAQC_SCRIPT=$(realpath $0)
+fi
+
+ILLUMINAQC_DIR=$(dirname ${ILLUMINAQC_SCRIPT})
+NTC_DIR="${ILLUMINAQC_DIR}/NTC_fastqs"
+
 # move fastq & variable files into project folders
 for variableFile in $(ls *.variables); do
 
@@ -103,14 +115,14 @@ for variableFile in $(ls *.variables); do
 	elif [[ "$sampleId" == *NTC* ]]; then
 
 		# Change the name of the model NTC fastqs to match the worksheet of the current run
-		for ntc_file in /data/diagnostics/pipelines/IlluminaQC/IlluminaQC-1.2.0/NTC_fastqs/*.fastq.gz; do
+		for ntc_file in ${NTC_DIR}/*.fastq.gz; do
         	if [ -e "$ntc_file" ]; then
            	   # Extract the suffix (everything after NTC-00-0000)
 			   suffix=$(basename "$ntc_file" | sed 's/^NTC-00-0000//')
 			   
 			   # Create new filename with the current sampleId
 			   new_filename="${sampleId}${suffix}"
-			   
+
 			   # Copy template file with new name (original remains unchanged)
 			   cp "$ntc_file" Data/"$sampleId"/"$new_filename"
 			fi
