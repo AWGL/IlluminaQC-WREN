@@ -42,10 +42,12 @@ function processJobs {
 
             # only run if novaseq and CopyComplete.txt is here - if other sequencer then do not care
             
-            if [[ -f $raw_write/$instrumentType/$run/CopyComplete.txt && "$instrumentType" = "novaseq" ]] || [[ "$instrumentType" != "novaseq"  ]] ;
+            if [[ -f $raw_read/$instrumentType/$run/CopyComplete.txt && "$instrumentType" = "novaseq" ]] || [[ "$instrumentType" != "novaseq"  ]] ;
             then
 
-                if [ -f $raw_write/$instrumentType/$run/SampleSheet.csv ]; then
+				# we want to look in raw_read for the samplesheet even though we're editing in raw_write because we want it to have synced already
+				# if it's in raw_read, it's in raw_write so can be edited
+                if [ -f $raw_read/$instrumentType/$run/SampleSheet.csv ]; then
 
                     # remove spaces from sample sheet
                     sed -i 's/ //g' $raw_write/$instrumentType/$run/SampleSheet.csv
